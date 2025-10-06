@@ -1,5 +1,5 @@
-#include "Crsf/CrsfFrameNew.hpp"
-#include "FlightNew.hpp"
+#include "Crsf/CrsfFrame.hpp"
+#include "Flight.hpp"
 #include <iostream>
 
 // Example visitor class for processing different frame types
@@ -22,7 +22,7 @@ public:
     }
     
     void operator()(const LinkRXFrameData& data) {
-        std::cout << "Processing Link: RSSI=" << data.rssi << " LQ=" << data.lq << std::endl;
+        std::cout << "Processing Link: RSSI=" << data.rssi << "dBm LQ=" << (int)data.lq << "% SNR=" << (int)data.noise << "dB" << std::endl;
     }
     
     void operator()(const UnknownFrameData& data) {

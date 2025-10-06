@@ -18,7 +18,7 @@ add_executable(
     tests 
     tests/test.cpp
     src/ELRSMonitor.cpp 
-    src/Crsf/CrsfFrameNew.cpp
+    src/Crsf/CrsfFrame.cpp
 )
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
@@ -26,7 +26,7 @@ add_executable(
     ${PROJECT_NAME} 
     src/main.cpp 
     src/ELRSMonitor.cpp 
-    src/Crsf/CrsfFrameNew.cpp
+    src/Crsf/CrsfFrame.cpp
 )
 
 enable_testing()

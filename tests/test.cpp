@@ -4,13 +4,9 @@
 #include <iomanip>
 #include <map>
 #include "../src/Crsf/CrsfFrame.hpp"
+#include "../src/Crsf/CrsfFrameData.hpp"
 #include "../src/ELRSMonitor.hpp"
 #include "../src/Flight.hpp"
-#include "../src/Crsf/CrsfGpsFrame.hpp"
-#include "../src/Crsf/CrsfAttitudeFrame.hpp"
-#include "../src/Crsf/CrsfBatteryFrame.hpp"
-#include "../src/Crsf/CrsfFlightModeFrame.hpp"
-#include "../src/Crsf/CrsfLinkRXFrame.hpp"
 
 TEST_CASE("parseAndDisplayData", "[parse and display]")
 {
@@ -127,11 +123,4 @@ TEST_CASE("parseAndDisplayData big data", "[parse and display]")
     DWORD bytesRead = sizeof(buffer);
 
     monitor.parseAndDisplayData(buffer, bytesRead, flightRef);
-
-    auto FlightMode = flightRef.getFlightModeFrames();
-    std::cout << "Total Flight Mode Frames: " << FlightMode.size() << std::endl;
-    for (const auto& frame : FlightMode) {
-        std::cout << std::endl << "flight mode frame: "<< std::endl;
-        std::cout << "mode: " << frame.getMode() << std::endl;
-    }
 }

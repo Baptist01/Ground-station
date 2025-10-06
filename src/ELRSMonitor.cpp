@@ -128,7 +128,6 @@ void ELRSMonitor::parseAndDisplayData(char* buffer, DWORD bytesRead, Flight& fli
     {
         if ((unsigned char)buffer[i] == 0xEA) 
         {
-            std::cout << std::endl << "Position " << i << std::endl;
             uint8_t frameLength = (unsigned char)buffer[i + 1];
             uint8_t frameType = (unsigned char)buffer[i + 2];
 
@@ -162,15 +161,18 @@ void ELRSMonitor::parseAndDisplayData(char* buffer, DWORD bytesRead, Flight& fli
                     std::cout << "GPS Frame - Lat: " << data.latitude << ", Lon: " << data.longitude 
                               << ", Alt: " << data.altitude << "m, Sats: " << (int)data.satellites << std::endl;
                 } else if constexpr (std::is_same_v<T, AttitudeFrameData>) {
-                    std::cout << "Attitude Frame - Roll: " << data.roll << "°, Pitch: " << data.pitch 
-                              << "°, Yaw: " << data.yaw << "°" << std::endl;
+                    std::cout << "Attitude Frame - Roll: " << data.roll << ", Pitch: " << data.pitch 
+                              << ", Yaw: " << data.yaw << std::endl;
                 } else if constexpr (std::is_same_v<T, BatteryFrameData>) {
                     std::cout << "Battery Frame - Voltage: " << data.voltage << "V, Current: " << data.current 
                               << "A, " << data.percentage << "%" << std::endl;
                 } else if constexpr (std::is_same_v<T, FlightModeFrameData>) {
                     std::cout << "Flight Mode Frame - Mode: " << data.mode << std::endl;
                 } else if constexpr (std::is_same_v<T, LinkRXFrameData>) {
-                    std::cout << "Link RX Frame - RSSI: " << data.rssi << ", LQ: " << data.lq << "%" << std::endl;
+                    const char* powerLevels[] = {"0mW", "10mW", "25mW", "100mW", "500mW", "1000mW", "2000mW"};
+                    const char* powerStr = (data.txPower < 7) ? powerLevels[data.txPower] : "Unknown";
+                    std::cout << "Link RX Frame - RSSI: " << data.rssi << "dBm, LQ: " << (int)data.lq 
+                              << "%, SNR: " << (int)data.noise << "dB, TX Power: " << powerStr << std::endl;
                 } else if constexpr (std::is_same_v<T, UnknownFrameData>) {
                     std::cout << "Unknown Frame - Type: 0x" << std::hex << (int)data.frameType << std::dec << std::endl;
                 }

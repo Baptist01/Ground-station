@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <conio.h>
 #include <cstdint>
-#include "./Crsf/CrsfFrameNew.hpp"
+#include "./Crsf/CrsfFrame.hpp"
 #include "./Crsf/CrsfFrameData.hpp"
-#include "FlightNew.hpp"
+#include "Flight.hpp"
 #include <variant>
 
 class ELRSMonitor {

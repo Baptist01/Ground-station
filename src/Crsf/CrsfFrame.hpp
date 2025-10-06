@@ -1,31 +1,18 @@
 #pragma once
+#include "CrsfFrameData.hpp"
 #include <vector>
 #include <cstdint>
 #include <chrono>
-#include <string>
 
-using byte = uint8_t;
-
-// ELRS/CRSF Protocol definitions
-#define CRSF_SYNC_BYTE 0xEA
-#define CRSF_MAX_FRAME_SIZE 64
-
-// CRSF Frame Types
+// CRSF Frame Types (keeping your existing definitions)
 #define CRSF_FRAMETYPE_GPS 0x02
 #define CRSF_FRAMETYPE_ATTITUDE 0x1E
 #define CRSF_FRAMETYPE_FLIGHT_MODE 0x21
-#define CRSF_FRAMETYPE_DEVICE_PING 0x28
-#define CRSF_FRAMETYPE_DEVICE_INFO 0x29
 #define CRSF_FRAMETYPE_RC_CHANNELS_PACKETS 0x16
 #define CRSF_FRAMETYPE_BATTERY_STATUS 0x08
-#define CRSF_FRAMETYPE_VARIOMETER 0x07
-#define CRSF_FRAMETYPE_HEARTBEAT 0x0A
 #define CRSF_FRAMETYPE_LINK_RX 0x14
-#define CRSF_FRAMETYPE_LINK_TX 0x1C
 
-#define CRSF_FRAMETYPE_RADIO_ID 0x3A
-
-struct CrsfFrame
+class CrsfFrame
 {
 private:
     uint8_t addr;
@@ -33,15 +20,24 @@ private:
     uint8_t type;
     std::vector<uint8_t> payload;
     uint8_t crc;
-    bool valid = true;
     std::chrono::system_clock::time_point timestamp;
-
+    
 public:
     CrsfFrame(uint8_t addr, uint8_t len, uint8_t type, const std::vector<uint8_t>& payload, uint8_t crc);
-    ~CrsfFrame();
+    ~CrsfFrame() = default;
 
-    virtual 
-
-    // Getters
+    CrsfFrameData decode() const;
+    
     uint8_t getType() const { return type; }
+    uint8_t getAddr() const { return addr; }
+    uint8_t getLength() const { return len; }
+    const std::vector<uint8_t>& getPayload() const { return payload; }
+    uint8_t getCrc() const { return crc; }
+    
+private:
+    GpsFrameData decodeGps() const;
+    AttitudeFrameData decodeAttitude() const;
+    BatteryFrameData decodeBattery() const;
+    FlightModeFrameData decodeFlightMode() const;
+    LinkRXFrameData decodeLinkRX() const;
 };
