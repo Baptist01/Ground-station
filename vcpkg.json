@@ -1,0 +1,12 @@
+{
+  "name": "ground-station",
+  "version": "0.1.0",
+  "dependencies": [
+    "catch2",
+    "glew",
+    "sdl2",
+    "imgui",
+    "opengl"
+  ],
+  "builtin-baseline": "4e08971f3ddc13018ca858a692efe92d3b6b9fce"
+}

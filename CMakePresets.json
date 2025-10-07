@@ -1,0 +1,138 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "installDir": "${sourceDir}/install/${presetName}",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_COLOR_DIAGNOSTICS": "ON"
+            }
+        },
+        {
+            "name": "release",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/release",
+            "installDir": "${sourceDir}/install/release",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_COMPILE_WARNING_AS_ERROR": "ON",
+                "ES_USE_SYSTEM_LIBRARIES": "OFF",
+                "BUILD_TESTING": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{CI}",
+                "rhs": "true"
+            }
+        },
+        {
+            "name": "cl",
+            "displayName": "Windows cl",
+            "description": "Builds with Visual C++ on Windows",
+            "inherits": "base",
+            "toolset": {
+                "value": "host=x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+      "name": "pi-debug",
+      "displayName": "Raspberry Pi Debug Build",
+      "description": "Debug build for Raspberry Pi using vcpkg and Makefiles",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/pi-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "/home/poseidon/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-linux",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "pi-release",
+      "displayName": "Raspberry Pi Release Build",
+      "description": "Optimized release build for Raspberry Pi",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/pi-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "/home/poseidon/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "arm64-linux",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+      {
+          "name": "debug",
+          "hidden": true,
+            "configuration": "Debug"
+        },
+        {
+            "name": "release",
+            "hidden": true,
+            "configuration": "Release"
+        },
+        {
+            "name": "cl-debug",
+            "displayName": "Debug",
+            "configurePreset": "cl",
+            "inherits": "debug"
+        },
+        {
+            "name": "cl-release",
+            "displayName": "Release",
+            "configurePreset": "cl",
+            "inherits": "release"
+        },
+        {
+      "name": "build-pi-debug",
+      "displayName": "Build Pi Debug",
+      "configurePreset": "pi-debug",
+      "jobs": 4
+    },
+    {
+      "name": "build-pi-release",
+      "displayName": "Build Pi Release",
+      "configurePreset": "pi-release",
+      "jobs": 4
+    }
+    ],
+    "testPresets": [
+        {
+            "name": "test-cl",
+            "displayName": "Test with console output",
+            "configurePreset": "cl",
+            "output": {
+                "outputOnFailure": true,
+                "verbosity": "verbose"
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        }
+    ]
+}
