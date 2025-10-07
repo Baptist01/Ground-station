@@ -14,7 +14,6 @@
     #include <conio.h>
     using SerialHandle = HANDLE;
     using BytesType = DWORD;
-    constexpr SerialHandle INVALID_SERIAL = INVALID_HANDLE_VALUE;
 #else
     #include <termios.h>
     #include <unistd.h>

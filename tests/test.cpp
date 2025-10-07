@@ -120,7 +120,8 @@ TEST_CASE("parseAndDisplayData big data", "[parse and display]")
         (char)0x00, (char)0x00, (char)0x00, (char)0x8D, (char)0x7C, (char)0xEA, (char)0x0A, (char)0x08, (char)0x00, (char)0x06, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00,
         (char)0xBF, (char)0xEA, (char)0x08, (char)0x21, (char)0x57, (char)0x41, (char)0x49, (char)0x54, (char)0x2A, (char)0x00, (char)0xB2
     };
-    u_int32_t bytesRead = sizeof(buffer);
+    
+    uint32_t bytesRead = sizeof(buffer);
 
     monitor.parseAndDisplayData(buffer, bytesRead, flightRef);
 }

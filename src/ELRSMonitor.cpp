@@ -7,11 +7,11 @@
     #include <sys/ioctl.h>
 #endif
 
-ELRSMonitor::ELRSMonitor() : hSerial(INVALID_SERIAL), isConnected(false), 
+ELRSMonitor::ELRSMonitor() : hSerial(INVALID_HANDLE_VALUE), isConnected(false), 
                 currentBaudRate(0), packetCount(0), totalBytes(0), heartbeat(0) {}
 
 ELRSMonitor::~ELRSMonitor() {
-    if (hSerial != INVALID_SERIAL) {
+    if (hSerial != INVALID_HANDLE_VALUE) {
 #ifdef _WIN32
         CloseHandle(hSerial);
 #else

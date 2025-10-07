@@ -6,8 +6,8 @@
 #include "Flight.hpp"
 
 #include "imgui.h"
-#include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_opengl3.h>
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl3.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <stdio.h>
