@@ -20,6 +20,7 @@ find_package(Catch2 CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(GLEW CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(implot CONFIG REQUIRED)
 
 # Main executable
 add_executable(
@@ -27,6 +28,7 @@ add_executable(
     src/main.cpp 
     src/ELRSMonitor.cpp 
     src/Crsf/CrsfFrame.cpp
+    src/ui/Dashboard.cpp
     imgui/backends/imgui_impl_sdl2.cpp
     imgui/backends/imgui_impl_opengl3.cpp
     imgui/imgui.cpp
@@ -45,9 +47,9 @@ include_directories(
 
 # Link libraries
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main SDL2::SDL2 GLEW::GLEW)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main SDL2::SDL2 GLEW::GLEW implot::implot)
 else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main SDL2::SDL2 GLEW::GLEW pthread)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main SDL2::SDL2 GLEW::GLEW implot::implot pthread)
 endif()
 
 # Tests (only build on non-cross-compile)
@@ -58,7 +60,7 @@ if(NOT CMAKE_CROSSCOMPILING)
         src/ELRSMonitor.cpp 
         src/Crsf/CrsfFrame.cpp
     )
-    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain SDL2::SDL2main SDL2::SDL2 GLEW::GLEW pthread)
+    target_link_libraries(tests PRIVATE Catch2::Catch2WithMain SDL2::SDL2main SDL2::SDL2 GLEW::GLEW implot::implot)
 
     enable_testing()
     add_test(NAME GroundStationTests COMMAND tests)
