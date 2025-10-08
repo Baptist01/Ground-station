@@ -10,7 +10,7 @@
 #include <SDL_opengl.h>
 #include "ui/Dashboard.hpp"
 
-int main(int, char**) {
+int main(int argc, char* argv[]) {
     // SDL init
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -25,11 +25,23 @@ int main(int, char**) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
     // Create window
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN);
+    // productie
+    // SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN);
+    // development
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+    // Get DPI and calculate window size in pixels for requested cm
+    float ddpi = 96.0f, hdpi = 96.0f, vdpi = 96.0f;
+    SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
+    float cm_to_inch = 0.3937f;
+    float requested_width_cm = 21.657f;   // 216.57mm
+    float requested_height_cm = 13.536f;  // 135.36mm
+    int win_width = static_cast<int>(requested_width_cm * cm_to_inch * hdpi);
+    int win_height = static_cast<int>(requested_height_cm * cm_to_inch * vdpi);
+
     SDL_Window* window = SDL_CreateWindow("GCS Dashboard",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                          1280, 720, window_flags);
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+                                          win_width, win_height, window_flags);
+    SDL_SetWindowResizable(window, SDL_TRUE);
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, gl_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync

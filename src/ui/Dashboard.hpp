@@ -5,4 +5,5 @@ namespace ui {
     void ShowTopBar();
     void ShowDashboard();
     void ShowLogger();
+    void ShowCameraFeed();
 }

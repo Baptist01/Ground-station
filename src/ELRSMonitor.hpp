@@ -42,8 +42,8 @@ private:
 public:
     ELRSMonitor();
     ~ELRSMonitor();
-    
-    bool connectToPort(const char* portName);
+
+    bool connectToPort();
     void listAvailablePorts();
     bool autoBaudDetection();
     bool configureTimeouts();

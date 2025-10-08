@@ -20,14 +20,14 @@ ELRSMonitor::~ELRSMonitor() {
     }
 }
 
-bool ELRSMonitor::connectToPort(const char* portName) {
+bool ELRSMonitor::connectToPort() {
     std::cout << "=== ELRS Ground Station Monitor ===" << std::endl;
-    std::cout << "Connecting to ELRS receiver on " << portName << " for wireless telemetry..." << std::endl;
+    std::cout << "Connecting to ELRS receiver on for telemetry..." << std::endl;
     
 #ifdef _WIN32
     // Open port READ-ONLY to not interfere with controller
     hSerial = CreateFileA(
-        portName,
+        "COM6",
         GENERIC_READ,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
@@ -38,7 +38,7 @@ bool ELRSMonitor::connectToPort(const char* portName) {
     
     if (hSerial == INVALID_HANDLE_VALUE) {
         DWORD error = GetLastError();
-        std::cout << "ERROR: Cannot open " << portName << " (Error: " << error << ")" << std::endl;
+        std::cout << "ERROR: Cannot open COM6 (Error: " << error << ")" << std::endl;
         
         switch (error) {
             case ERROR_FILE_NOT_FOUND:
@@ -57,11 +57,11 @@ bool ELRSMonitor::connectToPort(const char* portName) {
     }
 #else
     // Linux serial port opening
-    hSerial = open(portName, O_RDONLY | O_NOCTTY | O_NONBLOCK);
+    hSerial = open("/dev/ttyUSB0", O_RDONLY | O_NOCTTY | O_NONBLOCK);
     
     if (hSerial == -1) {
         int error = errno;
-        std::cout << "ERROR: Cannot open " << portName << " (Error: " << error << " - " << strerror(error) << ")" << std::endl;
+        std::cout << "ERROR: Cannot open /dev/ttyUSB0 (Error: " << error << " - " << strerror(error) << ")" << std::endl;
         
         switch (error) {
             case ENOENT:
