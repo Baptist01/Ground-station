@@ -11,8 +11,8 @@
 TEST_CASE("parseAndDisplayData", "[parse and display]")
 {
     ELRSMonitor monitor;
-    Flight flight;
-    Flight& flightRef = flight;
+    SharedFlight flight;
+    SharedFlight& flightRef = flight;
     // Fix narrowing conversion by explicitly casting to char
     char buffer[] = {
         (char)0xEA, (char)0x11, (char)0x02, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x00, (char)0x03, 
@@ -29,8 +29,8 @@ TEST_CASE("parseAndDisplayData", "[parse and display]")
 TEST_CASE("parseAndDisplayData big data", "[parse and display]")
 {
     ELRSMonitor monitor;
-    Flight flight;
-    Flight& flightRef = flight;
+    SharedFlight flight;
+    SharedFlight& flightRef = flight;
 
     char buffer[] = {
         (char)0xEA, (char)0x0D, (char)0x3A, (char)0xEA, (char)0xEE, (char)0x10, (char)0x00, (char)0x00, (char)0x4E, (char)0x20, (char)0x00, (char)0x00, (char)0x00, (char)0x6B, (char)0x2B, (char)0x00,

@@ -5,10 +5,12 @@
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
+#define IMGUI_IMPL_OPENGL_ES3
 #include "imgui_impl_opengl3.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "ui/Dashboard.hpp"
+#include "implot.h"
 
 int main(int argc, char* argv[]) {
     // SDL init
@@ -20,23 +22,20 @@ int main(int argc, char* argv[]) {
 
     // GL attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     // Create window
     // productie
     // SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN);
     // development
     SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
-    // Get DPI and calculate window size in pixels for requested cm
-    float ddpi = 96.0f, hdpi = 96.0f, vdpi = 96.0f;
-    SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi);
-    float cm_to_inch = 0.3937f;
-    float requested_width_cm = 21.657f;   // 216.57mm
-    float requested_height_cm = 13.536f;  // 135.36mm
-    int win_width = static_cast<int>(requested_width_cm * cm_to_inch * hdpi);
-    int win_height = static_cast<int>(requested_height_cm * cm_to_inch * vdpi);
+    int win_width = 1920;
+    int win_height = 1080;
 
     SDL_Window* window = SDL_CreateWindow("GCS Dashboard",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -49,6 +48,7 @@ int main(int argc, char* argv[]) {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
     // Setup backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui_ImplOpenGL3_Init("#version 300 es");
 
     // Main loop
     bool running = true;
@@ -97,6 +97,7 @@ int main(int argc, char* argv[]) {
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
+    ImPlot::DestroyContext();
     ImGui::DestroyContext();
 
     SDL_GL_DeleteContext(gl_context);

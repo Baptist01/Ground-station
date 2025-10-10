@@ -33,6 +33,7 @@ public:
     uint8_t getLength() const { return len; }
     const std::vector<uint8_t>& getPayload() const { return payload; }
     uint8_t getCrc() const { return crc; }
+    std::chrono::system_clock::time_point getTimestamp() const { return timestamp; }
     
 private:
     GpsFrameData decodeGps() const;

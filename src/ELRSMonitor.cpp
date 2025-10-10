@@ -7,11 +7,11 @@
     #include <sys/ioctl.h>
 #endif
 
-ELRSMonitor::ELRSMonitor() : hSerial(INVALID_HANDLE_VALUE), isConnected(false), 
+ELRSMonitor::ELRSMonitor() : hSerial(INVALID_SERIAL), isConnected(false), 
                 currentBaudRate(0), packetCount(0), totalBytes(0), heartbeat(0) {}
 
 ELRSMonitor::~ELRSMonitor() {
-    if (hSerial != INVALID_HANDLE_VALUE) {
+    if (hSerial != INVALID_SERIAL) {
 #ifdef _WIN32
         CloseHandle(hSerial);
 #else
@@ -56,13 +56,14 @@ bool ELRSMonitor::connectToPort() {
         return false;
     }
 #else
-    // Linux serial port opening
-    hSerial = open("/dev/ttyUSB0", O_RDONLY | O_NOCTTY | O_NONBLOCK);
-    
+    // Linux serial port opening 
+    hSerial = open("/dev/ttyACM0", O_RDONLY | O_NOCTTY | O_NONBLOCK);
+    // hSerial = open("/dev/pts/4", O_RDONLY | O_NOCTTY | O_NONBLOCK);
+
     if (hSerial == -1) {
         int error = errno;
-        std::cout << "ERROR: Cannot open /dev/ttyUSB0 (Error: " << error << " - " << strerror(error) << ")" << std::endl;
-        
+        std::cout << "ERROR: Cannot open /dev/ttyACM0 (Error: " << error << " - " << strerror(error) << ")" << std::endl;
+
         switch (error) {
             case ENOENT:
                 std::cout << "Port does not exist. Available ports:" << std::endl;
@@ -245,7 +246,7 @@ bool ELRSMonitor::autoBaudDetection() {
     }
 #endif
     
-    currentBaudRate = 9600;
+    currentBaudRate = 420000;
     isConnected = true;
     
     return configureTimeouts();
@@ -264,9 +265,21 @@ bool ELRSMonitor::configureTimeouts() {
 #endif
 }
 
-void ELRSMonitor::parseAndDisplayData(char* buffer, BytesType bytesRead, Flight& flight) {
+void ELRSMonitor::parseAndDisplayData(char* buffer, BytesType bytesRead, SharedFlight& sharedFlight) {
     packetCount++;
     totalBytes += bytesRead;
+
+    // Save all bytes to a file, each line: byte: [0xXX] [dec]
+    static FILE* byteLogFile = nullptr;
+    if (!byteLogFile) {
+        byteLogFile = fopen("elrs_bytes.log", "a");
+    }
+    if (byteLogFile) {
+        for (BytesType i = 0; i < bytesRead; ++i) {
+            fprintf(byteLogFile, "byte: [0x%02X] [%d]\n", (unsigned char)buffer[i], (unsigned char)buffer[i]);
+        }
+        fflush(byteLogFile);
+    }
     
     for (BytesType i = 0; i < bytesRead; i++) 
     {
@@ -294,49 +307,21 @@ void ELRSMonitor::parseAndDisplayData(char* buffer, BytesType bytesRead, Flight&
 
             // Create frame and decode it using variant approach
             CrsfFrame frame(buffer[i], frameLength, frameType, frameValue, crc);
-            flight.addFrame(frame);
-            
-            // Decode and display the frame data
-            auto decodedData = frame.decode();
-            
-            std::visit([frameType](const auto& data) {
-                using T = std::decay_t<decltype(data)>;
-                if constexpr (std::is_same_v<T, GpsFrameData>) {
-                    std::cout << "GPS Frame - Lat: " << data.latitude << ", Lon: " << data.longitude 
-                              << ", Alt: " << data.altitude << "m, Sats: " << (int)data.satellites << std::endl;
-                } else if constexpr (std::is_same_v<T, AttitudeFrameData>) {
-                    std::cout << "Attitude Frame - Roll: " << data.roll << ", Pitch: " << data.pitch 
-                              << ", Yaw: " << data.yaw << std::endl;
-                } else if constexpr (std::is_same_v<T, BatteryFrameData>) {
-                    std::cout << "Battery Frame - Voltage: " << data.voltage << "V, Current: " << data.current 
-                              << "A, " << data.percentage << "%" << std::endl;
-                } else if constexpr (std::is_same_v<T, FlightModeFrameData>) {
-                    std::cout << "Flight Mode Frame - Mode: " << data.mode << std::endl;
-                } else if constexpr (std::is_same_v<T, LinkRXFrameData>) {
-                    const char* powerLevels[] = {"0mW", "10mW", "25mW", "100mW", "500mW", "1000mW", "2000mW"};
-                    const char* powerStr = (data.txPower < 7) ? powerLevels[data.txPower] : "Unknown";
-                    std::cout << "Link RX Frame - RSSI: " << data.rssi << "dBm, LQ: " << (int)data.lq 
-                              << "%, SNR: " << (int)data.noise << "dB, TX Power: " << powerStr << std::endl;
-                } else if constexpr (std::is_same_v<T, UnknownFrameData>) {
-                    std::cout << "Unknown Frame - Type: 0x" << std::hex << (int)data.frameType << std::dec << std::endl;
-                }
-            }, decodedData);
+            sharedFlight.addFrame(frame);
             
             if (validFrame) { i += frameLength + 1; }
         }
     }
 }
 
-void ELRSMonitor::monitorLoop(Flight& flight) {
+void ELRSMonitor::monitorLoop(SharedFlight& sharedFlight) {
     if (!isConnected) {
         std::cout << "Not connected to any port!" << std::endl;
         return;
     }
-    
+
     char buffer[512];
     BytesType bytesRead;
-    
-    std::cout << "Monitoring started. Press 'q' and Enter to quit..." << std::endl;
     
     while (true) {
 #ifdef _WIN32
@@ -351,7 +336,7 @@ void ELRSMonitor::monitorLoop(Flight& flight) {
         
         if (ReadFile(hSerial, buffer, sizeof(buffer), &bytesRead, NULL)) {
             if (bytesRead > 0) {
-                parseAndDisplayData(buffer, bytesRead, flight);
+                parseAndDisplayData(buffer, bytesRead, sharedFlight);
                 heartbeat = 0;
             }
         } else {
@@ -388,7 +373,7 @@ void ELRSMonitor::monitorLoop(Flight& flight) {
             if (FD_ISSET(hSerial, &readfds)) {
                 bytesRead = read(hSerial, buffer, sizeof(buffer));
                 if (bytesRead > 0) {
-                    parseAndDisplayData(buffer, bytesRead, flight);
+                    parseAndDisplayData(buffer, bytesRead, sharedFlight);
                     heartbeat = 0;
                 } else if (bytesRead < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
                     std::cout << "Read error: " << strerror(errno) << std::endl;

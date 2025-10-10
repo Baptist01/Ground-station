@@ -7,6 +7,7 @@
 #include "./Crsf/CrsfFrame.hpp"
 #include "./Crsf/CrsfFrameData.hpp"
 #include "Flight.hpp"
+#include "SharedFlight.hpp"
 #include <variant>
 
 #ifdef _WIN32
@@ -47,6 +48,6 @@ public:
     void listAvailablePorts();
     bool autoBaudDetection();
     bool configureTimeouts();
-    void parseAndDisplayData(char* buffer, BytesType bytesRead, Flight& flight);
-    void monitorLoop(Flight& flight);
+    void parseAndDisplayData(char* buffer, BytesType bytesRead, SharedFlight& sharedFlight);
+    void monitorLoop(SharedFlight& sharedFlight);
 };

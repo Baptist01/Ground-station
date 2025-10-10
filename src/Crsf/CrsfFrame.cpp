@@ -1,5 +1,6 @@
 #include "CrsfFrame.hpp"
 #include <iostream>
+#include <chrono>
 
 CrsfFrame::CrsfFrame(uint8_t addr, uint8_t len, uint8_t type, const std::vector<uint8_t>& payload, uint8_t crc)
     : addr(addr), len(len), type(type), payload(payload), crc(crc), 
@@ -18,7 +19,6 @@ CrsfFrameData CrsfFrame::decode() const
             return decodeBattery();
         case CRSF_FRAMETYPE_FLIGHT_MODE:
             return decodeFlightMode();
-        case CRSF_FRAMETYPE_RC_CHANNELS_PACKETS:
         case CRSF_FRAMETYPE_LINK_RX:
             return decodeLinkRX();
         default:
@@ -44,6 +44,7 @@ GpsFrameData CrsfFrame::decodeGps() const
         data.speed = speed / 3.6f;          // Convert to m/s
         data.heading = heading / 100;       // Convert to degrees
         data.satellites = satellites;
+        data.timestamp = this->timestamp;
     }
     
     return data;
@@ -61,6 +62,7 @@ AttitudeFrameData CrsfFrame::decodeAttitude() const
         data.roll = roll / 10.0f;   // Convert to degrees
         data.pitch = pitch / 10.0f; // Convert to degrees
         data.yaw = yaw / 10.0f;     // Convert to degrees
+        data.timestamp = this->timestamp;
     }
     
     return data;
@@ -80,6 +82,7 @@ BatteryFrameData CrsfFrame::decodeBattery() const
         data.current = current / 100.0f;    // Convert to amps
         data.capacity = capacity;           // mAh
         data.percentage = percentage;       // %
+        data.timestamp = this->timestamp;
     }
     
     return data;
@@ -94,12 +97,14 @@ FlightModeFrameData CrsfFrame::decodeFlightMode() const
         if (payload[i] == 0) break; // Stop at null terminator
         if (payload[i] >= 32 && payload[i] <= 126) { // Printable ASCII only
             data.mode += static_cast<char>(payload[i]);
+            data.timestamp = this->timestamp;
         }
     }
     
     // If empty, set to "UNKNOWN"
     if (data.mode.empty()) {
         data.mode = "UNKNOWN";
+        data.timestamp = this->timestamp;
     }
     
     return data;
@@ -115,6 +120,7 @@ LinkRXFrameData CrsfFrame::decodeLinkRX() const
         data.lq = payload[2];          // Link quality percentage (0-100)
         data.noise = payload[3];       // SNR in dB
         data.txPower = payload[6];     // TX Power enum (0=0mW, 1=10mW, 2=25mW, 3=100mW, 4=500mW, 5=1000mW, 6=2000mW)
+        data.timestamp = this->timestamp;
     }
     
     return data;
